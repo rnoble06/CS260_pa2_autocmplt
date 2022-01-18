@@ -152,10 +152,11 @@ void InsertionSort(List *namedList)
       namedList->data[k]=temp;
       
       k=k-1;
+      temp=NULL;
+      free(temp);      //possible seg fault location
     }
     j=j+1;
   } 
-  temp=NULL;
 }
 
 
@@ -223,18 +224,25 @@ int main(int argc, char **argv) {
       }
 
     }
+    /*----------------------------------------------------------------*/
+    //close the input file
+    fclose(fp);
+
+    /*----------------------------------------------------------------*/
     /*---Sort list---*/
     InsertionSort(origList);
 
 
 
 
-    /*----------------------------------------------------------------*/
 
-    //close the input file
-    fclose(fp);
 
-    /*----------------------------------------------------------------*/
+
+
+
+
+
+    
     printList(origList);
     /*----------------------------------------------------------------*/
 
