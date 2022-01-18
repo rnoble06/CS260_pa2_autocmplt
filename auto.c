@@ -37,10 +37,131 @@ List *initList(int lineCount)
   newList->capacity = lineCount;
   newList->data = malloc(sizeof(Entry *)*newList->capacity);
 
-  printf("%d\n",newList->capacity);
-
   return newList;
 }
+
+
+
+/*----------------------------------------------------------------*/
+/*----------------------------------------------------------------*/
+
+
+void insertToHead(List *namedList, char *word, int weight)
+{
+  Entry *newEntry = initEntry(word,weight);
+  if (namedList->size==0)
+  {
+    namedList->data[namedList->size] = newEntry;
+    namedList->size+=1;
+  }
+  
+  else
+  {
+    if (((namedList->size)+1)<=(namedList->capacity))
+    {
+      //shiftPosition(namedList, 0);
+      
+      namedList->data[0] = newEntry;
+      namedList->size+=1;
+    }
+
+    else if (((namedList->size)+1)>(namedList->capacity))
+    {
+      //doubleCapacity(namedList);
+      //shiftPosition(namedList, 0);
+
+      namedList->data[0] = newEntry;
+      namedList->size+=1;
+    }
+  }
+}
+void insertToTail(List *namedList, char *word,int weight)
+{
+  Entry *newEntry = initEntry(word,weight);
+  if (((namedList->size)+1)<=(namedList->capacity))
+  {
+    namedList->data[namedList->size] = newEntry;
+    namedList->size+=1;
+  }
+  else if (((namedList->size)+1)>(namedList->capacity))
+  {
+    //doubleCapacity(namedList);
+    
+    namedList->data[namedList->size] = newEntry;
+    namedList->size+=1;
+  }
+  else printf("Invalid Insert!\n");
+}
+
+void insertToPosition(List *namedList, int position, char *word, int weight)
+{
+  Entry *newEntry = initEntry(word,weight);
+  if (((namedList->size)+1)<=(namedList->capacity))
+  {
+    if (namedList->size==position)
+    {
+      namedList->data[position] = newEntry;
+      namedList->size+=1;
+    }
+    else 
+    {
+      //shiftPosition(namedList, position);
+
+      namedList->data[position] = newEntry;
+      namedList->size+=1;
+    }
+  }
+  else if (((namedList->size)+1)>(namedList->capacity))
+    {
+      //doubleCapacity(namedList);
+      //shiftPosition(namedList, 0);
+
+      namedList->data[position] = newEntry;
+      namedList->size+=1;
+    }
+  else printf("Invalid Insert!\n");
+}
+
+void printList(List *namedList)
+{
+  int i=0;
+  if (namedList->data[0] != NULL)
+  {
+    while (namedList->data[i] != NULL)
+    {
+      printf("[%d]    %-20s", i,namedList->data[i]->word);
+      printf("\t%d\n", namedList->data[i]->weight);
+      i++;
+    }
+  }
+  else printf("List is empty!!\n");
+}
+
+void InsertionSort(List *namedList)
+{
+  int j=1;
+  int k=j;
+  Entry *temp;
+  while(j<namedList->size)
+  {
+    k=j;
+    while ((k>0) && (strcmp(namedList->data[k-1]->word,namedList->data[k]->word))>0)
+    {
+      temp=namedList->data[k-1];
+      namedList->data[k-1]=namedList->data[k];
+      namedList->data[k]=temp;
+      
+      k=k-1;
+    }
+    j=j+1;
+  } 
+  temp=NULL;
+}
+
+
+/*----------------------------------------------------------------*/
+/*----------------------------------------------------------------*/
+
 
 
 
@@ -73,12 +194,10 @@ int main(int argc, char **argv) {
     
     
     //This might be a good place to allocate memory for your data structure, by the size of "lineCount"
-
-
     /*-------  Allocate memory for structure. Review function from prj 1  -------*/
 
-    List *sortedList;
-	  sortedList = initList(lineCount);
+    List *origList;
+	  origList = initList(lineCount);
 
     /*----------------------------------------------------------------*/
 
@@ -88,13 +207,37 @@ int main(int argc, char **argv) {
     int weight;
     for(int i = 0; i < lineCount; i++)
     {
-        fscanf(fp, "%s %d\n",word,&weight);
-        //Let's print them to the screen to make sure we can read input, for debugging purposes. You can remove this part from your submission.
-        //printf("%s %d\n",word,weight);
+      fscanf(fp, "%s %d\n",word,&weight);
+      //Let's print them to the screen to make sure we can read input, for debugging purposes. You can remove this part from your submission.
+      //printf("%s %d\n",word,weight);
+
+      /*----------------------------------------------------------------*/
+      /*---Fill list---*/
+      if (i==0)
+      {
+        insertToHead(origList,word,weight);
+      }
+      else
+      {
+        insertToTail(origList,word,weight);
+      }
+
     }
+    /*---Sort list---*/
+    InsertionSort(origList);
+
+
+
+
+    /*----------------------------------------------------------------*/
+
     //close the input file
     fclose(fp);
-    
+
+    /*----------------------------------------------------------------*/
+    printList(origList);
+    /*----------------------------------------------------------------*/
+
     //Now it is your turn to do the magic!!!
     //do search/sort/print, whatever you think you need to do to satisfy the requirements of the assignment!
     //don't forget to free the memory before you quit the program!
@@ -105,7 +248,8 @@ int main(int argc, char **argv) {
     // if there are more than 10 outputs to print, you should print top weighted 10 outputs.
     
     /*----------------------------------------------------------------*/
-    free(sortedList);
+    free(origList);
+    /*----------------------------------------------------------------*/
 
     return 0;
 }
