@@ -3,6 +3,47 @@
 #include <string.h>
 
 #define BUFSIZE 256
+#define INITIAL_SIZE 2
+
+typedef struct entry
+{
+	char *word;
+	int weight;
+} Entry;
+
+Entry *initEntry(char *word, int weight)
+{
+  Entry *newEntry = malloc(sizeof(Entry));
+
+  newEntry->word = malloc(sizeof(char)*(strlen(word)+1));
+  strcpy(newEntry->word,word);
+
+  newEntry->weight = weight;
+
+  return newEntry;
+}
+
+typedef struct arrayList 
+{
+	int capacity;     //max possible
+	int size;         //number of entries
+	Entry **data;
+} List;
+
+List *initList(int lineCount)
+{
+  List *newList = malloc(sizeof(List));
+  newList->size = 0;
+  newList->capacity = lineCount;
+  newList->data = malloc(sizeof(Entry *)*newList->capacity);
+
+  printf("%d\n",newList->capacity);
+
+  return newList;
+}
+
+
+
 
 int main(int argc, char **argv) {
     char *inputFilePath = argv[1]; //this keeps the path to input file
@@ -28,11 +69,19 @@ int main(int argc, char **argv) {
     }
     
     //Printing line count for debugging purposes. You can remove this part from your submission.
-    //printf("%d\n",lineCount);
+    printf("%d\n",lineCount);
     
     
     //This might be a good place to allocate memory for your data structure, by the size of "lineCount"
-    
+
+
+    /*-------  Allocate memory for structure. Review function from prj 1  -------*/
+
+    List *sortedList;
+	  sortedList = initList(lineCount);
+
+    /*----------------------------------------------------------------*/
+
     //Read the file once more, this time to fill in the data into memory
     fseek(fp, 0, SEEK_SET);// rewind to the beginning of the file, before reading it line by line.
     char word[BUFSIZE]; //to be used for reading lines in the loop below
@@ -55,5 +104,8 @@ int main(int argc, char **argv) {
     // use the following to print a single line of outputs (assuming that the word and weight are stored in variables named word and weight, respectively): printf("%s %d\n",word,weight);
     // if there are more than 10 outputs to print, you should print top weighted 10 outputs.
     
+    /*----------------------------------------------------------------*/
+    free(sortedList);
+
     return 0;
 }
