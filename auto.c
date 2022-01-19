@@ -53,7 +53,7 @@ void insertToHead(List *namedList, char *word, int weight)
   if (namedList->size==0)
   {
     namedList->data[namedList->size] = newEntry;
-    namedList->size+=1;
+    namedList->size=namedList->size+1;
   }
   
   else
@@ -63,7 +63,7 @@ void insertToHead(List *namedList, char *word, int weight)
       //shiftPosition(namedList, 0);
       
       namedList->data[0] = newEntry;
-      namedList->size+=1;
+      namedList->size=namedList->size+1;
     }
 
     else if (((namedList->size)+1)>(namedList->capacity))
@@ -71,7 +71,7 @@ void insertToHead(List *namedList, char *word, int weight)
       //shiftPosition(namedList, 0);
 
       namedList->data[0] = newEntry;
-      namedList->size+=1;
+      namedList->size=namedList->size+1;
     }
   }
   
@@ -82,16 +82,16 @@ void insertToTail(List *namedList, char *word,int weight)
   if (((namedList->size)+1)<=(namedList->capacity))
   {
     namedList->data[namedList->size] = newEntry;
-    namedList->size+=1;
+    namedList->size=namedList->size+1;
   }
   else if (((namedList->size)+1)>(namedList->capacity))
   {
     //doubleCapacity(namedList);
     
     namedList->data[namedList->size] = newEntry;
-    namedList->size+=1;
+    namedList->size=namedList->size+1;
   }
-  else printf("Invalid Insert!\n");
+  else fprintf(stderr,"Invalid Insert!\n");
 }
 
 void printList(List *namedList)
@@ -101,11 +101,11 @@ void printList(List *namedList)
   {
     while ((namedList->data[i] != NULL)&&(i<MAX_SIZE))
     {
-      printf("%s,%d\n",namedList->data[i]->word, namedList->data[i]->weight);
+      fprintf(stderr,"%s,%d\n",namedList->data[i]->word, namedList->data[i]->weight);
       i++;
     }
   }
-  else printf("List is empty!!\n");
+  else fprintf(stderr,"List is empty!!\n");
 }
 
 void InsertionSort(List *namedList)
@@ -152,9 +152,24 @@ void InsertionSortWeight(List *namedList)
   } 
 }
 
+int find(List *namedList, char *queryWord, int qWlen)
+{
+  int i=0;
+  
+  for (i=0;i<namedList->size;i++)
+  {
+    if(strncmp(namedList->data[i]->word,queryWord,qWlen)==0)
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int findFirst(List *namedList, char *queryWord, int qWlen)
 {
   int firstP=0;
+
   while((strncmp(namedList->data[firstP]->word,queryWord,qWlen)!=0)&&(namedList->data[firstP]!=NULL))
   {
     firstP=firstP+1;
@@ -186,6 +201,7 @@ int main(int argc, char **argv) {
     int lastPos=0;
     int qWlen=strlen(queryWord);
     int qMatches=0;
+    int inList=0;
     
     //read input file
     FILE *fp = fopen(inputFilePath, "r");
@@ -243,32 +259,36 @@ int main(int argc, char **argv) {
     /*---Get new list matching user input given in *queryWord---*/
     /*---Create new list---*/
 
-    firstPos=findFirst(origList,queryWord,qWlen);
-    lastPos=findLast(origList,queryWord,qWlen);
-
-    //printf("First %d\n",firstPos);
-    //printf("Last %d\n",lastPos);
-    qMatches=lastPos-firstPos;
-    List *autoList;
-	  autoList = initList(qMatches);
-
-    for(int i = firstPos, j=0; i < (lastPos+1); i++,j++)
+    if ((inList=find(origList, queryWord, qWlen)) == 1)
     {
-      /*---Fill autoList---*/
-      if (j==0)
-      {
-        insertToHead(autoList,origList->data[i]->word,origList->data[i]->weight);
-      }
-      else
-      {
-        insertToTail(autoList,origList->data[i]->word,origList->data[i]->weight);
-      }
+      firstPos=findFirst(origList,queryWord,qWlen);
+      lastPos=findLast(origList,queryWord,qWlen);
 
+      qMatches=(lastPos-firstPos)+1;
+      List *autoList;
+      autoList = initList(qMatches);
+
+      for(int i = firstPos, j=0; i < (lastPos+1); i++,j++)
+      {
+        /*---Fill autoList---*/
+        if (j==0)
+        {
+          insertToHead(autoList,origList->data[i]->word,origList->data[i]->weight);
+        }
+        else
+        {
+          insertToTail(autoList,origList->data[i]->word,origList->data[i]->weight);
+        }
+
+      }
+      InsertionSortWeight(autoList);
+      printList(autoList);
+      free(autoList);
     }
-
-    InsertionSortWeight(autoList);
-
-    printList(autoList);
+    else
+    {
+      fprintf(stderr,"No suggestion!\n");
+    }
     /*----------------------------------------------------------------*/
 
     //Now it is your turn to do the magic!!!
@@ -281,8 +301,9 @@ int main(int argc, char **argv) {
     // if there are more than 10 outputs to print, you should print top weighted 10 outputs.
     
     /*----------------------------------------------------------------*/
+
     free(origList);
-    free(autoList);
+    
     /*----------------------------------------------------------------*/
 
     return 0;
