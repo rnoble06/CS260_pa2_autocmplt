@@ -4,6 +4,7 @@
 
 #define BUFSIZE 256
 #define INITIAL_SIZE 2
+#define MAX_SIZE 10
 
 typedef struct entry
 {
@@ -67,13 +68,13 @@ void insertToHead(List *namedList, char *word, int weight)
 
     else if (((namedList->size)+1)>(namedList->capacity))
     {
-      //doubleCapacity(namedList);
       //shiftPosition(namedList, 0);
 
       namedList->data[0] = newEntry;
       namedList->size+=1;
     }
   }
+  
 }
 void insertToTail(List *namedList, char *word,int weight)
 {
@@ -93,44 +94,14 @@ void insertToTail(List *namedList, char *word,int weight)
   else printf("Invalid Insert!\n");
 }
 
-void insertToPosition(List *namedList, int position, char *word, int weight)
-{
-  Entry *newEntry = initEntry(word,weight);
-  if (((namedList->size)+1)<=(namedList->capacity))
-  {
-    if (namedList->size==position)
-    {
-      namedList->data[position] = newEntry;
-      namedList->size+=1;
-    }
-    else 
-    {
-      //shiftPosition(namedList, position);
-
-      namedList->data[position] = newEntry;
-      namedList->size+=1;
-    }
-  }
-  else if (((namedList->size)+1)>(namedList->capacity))
-    {
-      //doubleCapacity(namedList);
-      //shiftPosition(namedList, 0);
-
-      namedList->data[position] = newEntry;
-      namedList->size+=1;
-    }
-  else printf("Invalid Insert!\n");
-}
-
 void printList(List *namedList)
 {
   int i=0;
   if (namedList->data[0] != NULL)
   {
-    while (namedList->data[i] != NULL)
+    while ((namedList->data[i] != NULL)&&(i<MAX_SIZE))
     {
-      printf("[%d]    %-20s", i,namedList->data[i]->word);
-      printf("\t%d\n", namedList->data[i]->weight);
+      printf("%s,%d\n",namedList->data[i]->word, namedList->data[i]->weight);
       i++;
     }
   }
@@ -159,18 +130,62 @@ void InsertionSort(List *namedList)
   } 
 }
 
+void InsertionSortWeight(List *namedList)
+{
+  int j=1;
+  int k=j;
+  Entry *temp;
+  while(j<namedList->size)
+  {
+    k=j;
+    while ((k>0) && ((namedList->data[k-1]->weight)<(namedList->data[k]->weight)))
+    {
+      temp=namedList->data[k-1];
+      namedList->data[k-1]=namedList->data[k];
+      namedList->data[k]=temp;
+      
+      k=k-1;
+      temp=NULL;
+      free(temp);      //possible seg fault location
+    }
+    j=j+1;
+  } 
+}
+
+int findFirst(List *namedList, char *queryWord, int qWlen)
+{
+  int firstP=0;
+  while((strncmp(namedList->data[firstP]->word,queryWord,qWlen)!=0)&&(namedList->data[firstP]!=NULL))
+  {
+    firstP=firstP+1;
+  }
+  //printf("First %d\n",firstP);
+  return firstP;
+}
+
+int findLast(List *namedList, char *queryWord, int qWlen)
+{
+  int lastP=namedList->size-1;
+  while((strncmp(namedList->data[lastP]->word,queryWord,qWlen)!=0)&&(namedList->data[lastP]!=NULL))
+  {
+    lastP=lastP-1;
+  }
+  //printf("Last %d\n",lastP);
+  return lastP;
+}
 
 /*----------------------------------------------------------------*/
 /*----------------------------------------------------------------*/
-
-
-
 
 
 int main(int argc, char **argv) {
     char *inputFilePath = argv[1]; //this keeps the path to input file
     char *queryWord = argv[2]; // this keeps the query word
     int lineCount=0; //this variable will tell us how much memory to allocate
+    int firstPos=0;
+    int lastPos=0;
+    int qWlen=strlen(queryWord);
+    int qMatches=0;
     
     //read input file
     FILE *fp = fopen(inputFilePath, "r");
@@ -189,12 +204,7 @@ int main(int argc, char **argv) {
     {
         lineCount++;
     }
-    
-    //Printing line count for debugging purposes. You can remove this part from your submission.
-    printf("%d\n",lineCount);
-    
-    
-    //This might be a good place to allocate memory for your data structure, by the size of "lineCount"
+
     /*-------  Allocate memory for structure. Review function from prj 1  -------*/
 
     List *origList;
@@ -209,8 +219,6 @@ int main(int argc, char **argv) {
     for(int i = 0; i < lineCount; i++)
     {
       fscanf(fp, "%s %d\n",word,&weight);
-      //Let's print them to the screen to make sure we can read input, for debugging purposes. You can remove this part from your submission.
-      //printf("%s %d\n",word,weight);
 
       /*----------------------------------------------------------------*/
       /*---Fill list---*/
@@ -232,18 +240,35 @@ int main(int argc, char **argv) {
     /*---Sort list---*/
     InsertionSort(origList);
 
+    /*---Get new list matching user input given in *queryWord---*/
+    /*---Create new list---*/
 
+    firstPos=findFirst(origList,queryWord,qWlen);
+    lastPos=findLast(origList,queryWord,qWlen);
 
+    //printf("First %d\n",firstPos);
+    //printf("Last %d\n",lastPos);
+    qMatches=lastPos-firstPos;
+    List *autoList;
+	  autoList = initList(qMatches);
 
+    for(int i = firstPos, j=0; i < (lastPos+1); i++,j++)
+    {
+      /*---Fill autoList---*/
+      if (j==0)
+      {
+        insertToHead(autoList,origList->data[i]->word,origList->data[i]->weight);
+      }
+      else
+      {
+        insertToTail(autoList,origList->data[i]->word,origList->data[i]->weight);
+      }
 
+    }
 
+    InsertionSortWeight(autoList);
 
-
-
-
-
-    
-    printList(origList);
+    printList(autoList);
     /*----------------------------------------------------------------*/
 
     //Now it is your turn to do the magic!!!
@@ -257,6 +282,7 @@ int main(int argc, char **argv) {
     
     /*----------------------------------------------------------------*/
     free(origList);
+    free(autoList);
     /*----------------------------------------------------------------*/
 
     return 0;
