@@ -149,21 +149,7 @@ void InsertionSortWeight(List *namedList)
   } 
 }
 
-int find(List *namedList, char *queryWord, int qWlen)
-{
-  int i=0;
-  
-  for (i=0;i<namedList->size;i++)
-  {
-    if(strncmp(namedList->data[i]->word,queryWord,qWlen)==0)
-    {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-int findFirst(List *namedList, int low, int high, char *queryWord, int n, int qLen) //x is query, arr[] is list, n is size of list, low is 0, high is n-1
+int findFirst(List *namedList, int low, int high, char *queryWord, int n, int qLen)
 {
     if (high >= low) {
         int mid = low + (high - low) / 2;
@@ -177,7 +163,7 @@ int findFirst(List *namedList, int low, int high, char *queryWord, int n, int qL
     return -1;
 }
 
-int findLast(List *namedList, int low, int high, char *queryWord, int n, int qLen) //x is query, arr[] is list, n is size of list, low is 0, high is n-1
+int findLast(List *namedList, int low, int high, char *queryWord, int n, int qLen)
 {
     if (high >= low) {
         int mid = low + (high - low) / 2;
@@ -268,11 +254,16 @@ int main(int argc, char **argv) {
   /*---Get new list matching user input given in *queryWord---*/
   /*---Create new list---*/
 
-  if ((inList=find(origList, queryWord, qWlen)) == 1)
-  {
-    firstPos=findFirst(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
-    lastPos=findLast(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
+  
+  firstPos=findFirst(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
+  lastPos=findLast(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
 
+  if (firstPos == -1 || lastPos == -1)
+  {
+    fprintf(stderr,"No suggestion!\n");
+  }
+  else
+  {
     qMatches=(lastPos-firstPos)+1;
     List *autoList;
     autoList = initList(qMatches);
@@ -294,10 +285,7 @@ int main(int argc, char **argv) {
     printList(autoList);
     free(autoList);
   }
-  else
-  {
-    fprintf(stderr,"No suggestion!\n");
-  }
+
   /*----------------------------------------------------------------*/
   /*----------------------------------------------------------------*/
 
