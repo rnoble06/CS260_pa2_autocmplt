@@ -41,11 +41,8 @@ List *initList(int lineCount)
   return newList;
 }
 
-
-
 /*----------------------------------------------------------------*/
 /*----------------------------------------------------------------*/
-
 
 void insertToHead(List *namedList, char *word, int weight)
 {
@@ -124,7 +121,7 @@ void InsertionSort(List *namedList)
       
       k=k-1;
       temp=NULL;
-      free(temp);      //possible seg fault location
+      free(temp);
     }
     j=j+1;
   } 
@@ -146,7 +143,7 @@ void InsertionSortWeight(List *namedList)
       
       k=k-1;
       temp=NULL;
-      free(temp);      //possible seg fault location
+      free(temp);
     }
     j=j+1;
   } 
@@ -174,7 +171,6 @@ int findFirst(List *namedList, char *queryWord, int qWlen)
   {
     firstP=firstP+1;
   }
-  //printf("First %d\n",firstP);
   return firstP;
 }
 
@@ -185,7 +181,6 @@ int findLast(List *namedList, char *queryWord, int qWlen)
   {
     lastP=lastP-1;
   }
-  //printf("Last %d\n",lastP);
   return lastP;
 }
 
@@ -194,117 +189,114 @@ int findLast(List *namedList, char *queryWord, int qWlen)
 
 
 int main(int argc, char **argv) {
-    char *inputFilePath = argv[1]; //this keeps the path to input file
-    char *queryWord = argv[2]; // this keeps the query word
-    int lineCount=0; //this variable will tell us how much memory to allocate
-    int firstPos=0;
-    int lastPos=0;
-    int qWlen=strlen(queryWord);
-    int qMatches=0;
-    int inList=0;
-    
-    //read input file
-    FILE *fp = fopen(inputFilePath, "r");
-    char *line = NULL; //variable to be used for line counting
-    size_t lineBuffSize = 0; //variable to be used for line counting
-    ssize_t lineSize; //variable to be used for line counting
-    
-    //check if the file is accessible, just to make sure...
-    if(fp == NULL){
-        fprintf(stderr, "Error opening file\n");
-        return -1;
-    }
+  char *inputFilePath = argv[1]; //this keeps the path to input file
+  char *queryWord = argv[2]; // this keeps the query word
+  int lineCount=0; //this variable will tell us how much memory to allocate
+  int firstPos=0;
+  int lastPos=0;
+  int qWlen=strlen(queryWord);
+  int qMatches=0;
+  int inList=0;
+  
+  //read input file
+  FILE *fp = fopen(inputFilePath, "r");
+  char *line = NULL; //variable to be used for line counting
+  size_t lineBuffSize = 0; //variable to be used for line counting
+  ssize_t lineSize; //variable to be used for line counting
+  
+  //check if the file is accessible, just to make sure...
+  if(fp == NULL){
+      fprintf(stderr, "Error opening file\n");
+      return -1;
+  }
 
-    //First, let's count number of lines. This will help us know how much memory to allocate
-    while((lineSize = getline(&line,&lineBuffSize,fp)) !=-1)
-    {
-        lineCount++;
-    }
+  //First, let's count number of lines. This will help us know how much memory to allocate
+  while((lineSize = getline(&line,&lineBuffSize,fp)) !=-1)
+  {
+      lineCount++;
+  }
 
-    /*-------  Allocate memory for structure. Review function from prj 1  -------*/
+  /*---Allocate memory for structure. Review function from prj 1 ---*/
+  List *origList;
+  origList = initList(lineCount);
+  /*----------------------------------------------------------------*/
 
-    List *origList;
-	  origList = initList(lineCount);
-
-    /*----------------------------------------------------------------*/
-
-    //Read the file once more, this time to fill in the data into memory
-    fseek(fp, 0, SEEK_SET);// rewind to the beginning of the file, before reading it line by line.
-    char word[BUFSIZE]; //to be used for reading lines in the loop below
-    int weight;
-    for(int i = 0; i < lineCount; i++)
-    {
-      fscanf(fp, "%s %d\n",word,&weight);
-
-      /*----------------------------------------------------------------*/
-      /*---Fill list---*/
-      if (i==0)
-      {
-        insertToHead(origList,word,weight);
-      }
-      else
-      {
-        insertToTail(origList,word,weight);
-      }
-
-    }
-    /*----------------------------------------------------------------*/
-    //close the input file
-    fclose(fp);
+  //Read the file once more, this time to fill in the data into memory
+  fseek(fp, 0, SEEK_SET);// rewind to the beginning of the file, before reading it line by line.
+  char word[BUFSIZE]; //to be used for reading lines in the loop below
+  int weight;
+  for(int i = 0; i < lineCount; i++)
+  {
+    fscanf(fp, "%s %d\n",word,&weight);
 
     /*----------------------------------------------------------------*/
-    /*---Sort list---*/
-    InsertionSort(origList);
-
-    /*---Get new list matching user input given in *queryWord---*/
-    /*---Create new list---*/
-
-    if ((inList=find(origList, queryWord, qWlen)) == 1)
+    /*---Fill list---*/
+    if (i==0)
     {
-      firstPos=findFirst(origList,queryWord,qWlen);
-      lastPos=findLast(origList,queryWord,qWlen);
-
-      qMatches=(lastPos-firstPos)+1;
-      List *autoList;
-      autoList = initList(qMatches);
-
-      for(int i = firstPos, j=0; i < (lastPos+1); i++,j++)
-      {
-        /*---Fill autoList---*/
-        if (j==0)
-        {
-          insertToHead(autoList,origList->data[i]->word,origList->data[i]->weight);
-        }
-        else
-        {
-          insertToTail(autoList,origList->data[i]->word,origList->data[i]->weight);
-        }
-
-      }
-      InsertionSortWeight(autoList);
-      printList(autoList);
-      free(autoList);
+      insertToHead(origList,word,weight);
     }
     else
     {
-      fprintf(stderr,"No suggestion!\n");
+      insertToTail(origList,word,weight);
     }
-    /*----------------------------------------------------------------*/
 
-    //Now it is your turn to do the magic!!!
-    //do search/sort/print, whatever you think you need to do to satisfy the requirements of the assignment!
-    //don't forget to free the memory before you quit the program!
-    
-    //OUTPUT SPECS:
-    // use the following if no word to suggest: printf("No suggestion!\n");
-    // use the following to print a single line of outputs (assuming that the word and weight are stored in variables named word and weight, respectively): printf("%s %d\n",word,weight);
-    // if there are more than 10 outputs to print, you should print top weighted 10 outputs.
-    
-    /*----------------------------------------------------------------*/
+  }
+  /*----------------------------------------------------------------*/
+  //close the input file
+  fclose(fp);
 
-    free(origList);
-    
-    /*----------------------------------------------------------------*/
+  //Now it is your turn to do the magic!!!
+  //do search/sort/print, whatever you think you need to do to satisfy the requirements of the assignment!
+  //don't forget to free the memory before you quit the program!
+  
+  //OUTPUT SPECS:
+  // use the following if no word to suggest: printf("No suggestion!\n");
+  // use the following to print a single line of outputs (assuming that the word and weight are stored in variables named word and weight, respectively): printf("%s %d\n",word,weight);
+  // if there are more than 10 outputs to print, you should print top weighted 10 outputs.
 
-    return 0;
+  /*----------------------------------------------------------------*/
+  /*---Sort list---*/
+  InsertionSort(origList);
+
+  /*---Get new list matching user input given in *queryWord---*/
+  /*---Create new list---*/
+
+  if ((inList=find(origList, queryWord, qWlen)) == 1)
+  {
+    firstPos=findFirst(origList,queryWord,qWlen);
+    lastPos=findLast(origList,queryWord,qWlen);
+
+    qMatches=(lastPos-firstPos)+1;
+    List *autoList;
+    autoList = initList(qMatches);
+
+    for(int i = firstPos, j=0; i < (lastPos+1); i++,j++)
+    {
+      /*---Fill autoList---*/
+      if (j==0)
+      {
+        insertToHead(autoList,origList->data[i]->word,origList->data[i]->weight);
+      }
+      else
+      {
+        insertToTail(autoList,origList->data[i]->word,origList->data[i]->weight);
+      }
+
+    }
+    InsertionSortWeight(autoList);
+    printList(autoList);
+    free(autoList);
+  }
+  else
+  {
+    fprintf(stderr,"No suggestion!\n");
+  }
+  /*----------------------------------------------------------------*/
+  /*----------------------------------------------------------------*/
+
+  free(origList);
+  
+  /*----------------------------------------------------------------*/
+
+  return 0;
 }
