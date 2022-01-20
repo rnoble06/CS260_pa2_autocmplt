@@ -163,25 +163,32 @@ int find(List *namedList, char *queryWord, int qWlen)
   return 0;
 }
 
-int findFirst(List *namedList, char *queryWord, int qWlen)
+int findFirst(List *namedList, int low, int high, char *queryWord, int n, int qLen) //x is query, arr[] is list, n is size of list, low is 0, high is n-1
 {
-  int firstP=0;
-
-  while((strncmp(namedList->data[firstP]->word,queryWord,qWlen)!=0)&&(namedList->data[firstP]!=NULL))
-  {
-    firstP=firstP+1;
-  }
-  return firstP;
+    if (high >= low) {
+        int mid = low + (high - low) / 2;
+        if ((mid == 0 || (strncmp(namedList->data[mid-1]->word,queryWord,qLen)<0)) && (strncmp(namedList->data[mid]->word,queryWord,qLen)==0))
+            return mid;
+        else if (strncmp(namedList->data[mid]->word,queryWord,qLen)<0)
+            return findFirst(namedList, (mid + 1), high, queryWord, n, qLen);
+        else
+            return findFirst(namedList, low, (mid - 1), queryWord, n, qLen);
+    }
+    return -1;
 }
 
-int findLast(List *namedList, char *queryWord, int qWlen)
+int findLast(List *namedList, int low, int high, char *queryWord, int n, int qLen) //x is query, arr[] is list, n is size of list, low is 0, high is n-1
 {
-  int lastP=namedList->size-1;
-  while((strncmp(namedList->data[lastP]->word,queryWord,qWlen)!=0)&&(namedList->data[lastP]!=NULL))
-  {
-    lastP=lastP-1;
-  }
-  return lastP;
+    if (high >= low) {
+        int mid = low + (high - low) / 2;
+        if ((mid == n - 1 || (strncmp(namedList->data[mid+1]->word,queryWord,qLen)>0)) && (strncmp(namedList->data[mid]->word,queryWord,qLen)==0))
+            return mid;
+        else if (strncmp(namedList->data[mid]->word,queryWord,qLen)>0)
+            return findLast(namedList, low, (mid - 1), queryWord, n, qLen);
+        else
+            return findLast(namedList, (mid + 1), high, queryWord, n, qLen);
+    }
+    return -1;
 }
 
 /*----------------------------------------------------------------*/
@@ -263,8 +270,8 @@ int main(int argc, char **argv) {
 
   if ((inList=find(origList, queryWord, qWlen)) == 1)
   {
-    firstPos=findFirst(origList,queryWord,qWlen);
-    lastPos=findLast(origList,queryWord,qWlen);
+    firstPos=findFirst(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
+    lastPos=findLast(origList, 0, origList->size-1, queryWord, origList->size, qWlen);
 
     qMatches=(lastPos-firstPos)+1;
     List *autoList;
