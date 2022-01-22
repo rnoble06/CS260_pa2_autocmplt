@@ -20,7 +20,7 @@ Entry *initEntry(char *word, int weight)
   strcpy(newEntry->word,word);
 
   newEntry->weight = weight;
-
+  
   return newEntry;
 }
 
@@ -52,26 +52,21 @@ void insertToHead(List *namedList, char *word, int weight)
     namedList->data[namedList->size] = newEntry;
     namedList->size=namedList->size+1;
   }
-  
   else
   {
     if (((namedList->size)+1)<=(namedList->capacity))
     {
       //shiftPosition(namedList, 0);
-      
       namedList->data[0] = newEntry;
       namedList->size=namedList->size+1;
     }
-
     else if (((namedList->size)+1)>(namedList->capacity))
     {
       //shiftPosition(namedList, 0);
-
       namedList->data[0] = newEntry;
       namedList->size=namedList->size+1;
     }
   }
-  
 }
 void insertToTail(List *namedList, char *word,int weight)
 {
@@ -98,7 +93,7 @@ void printList(List *namedList)
   {
     while ((namedList->data[i] != NULL)&&(i<MAX_SIZE))
     {
-      fprintf(stderr,"%s,%d\n",namedList->data[i]->word, namedList->data[i]->weight);
+      printf("%s,%d\n",namedList->data[i]->word, namedList->data[i]->weight);
       i++;
     }
   }
@@ -121,7 +116,6 @@ void InsertionSort(List *namedList)
       
       k=k-1;
       temp=NULL;
-      free(temp);
     }
     j=j+1;
   } 
@@ -143,43 +137,41 @@ void InsertionSortWeight(List *namedList)
       
       k=k-1;
       temp=NULL;
-      free(temp);
     }
     j=j+1;
   } 
 }
 
-int findFirst(List *namedList, int low, int high, char *queryWord, int n, int qLen)
+int findFirst(List *namedList, int start, int stop, char *queryWord, int n, int qLen)
 {
-    if (high >= low) {
-        int mid = low + (high - low) / 2;
+    if (stop >= start) {
+        int mid = start + (stop - start) / 2;
         if ((mid == 0 || (strncmp(namedList->data[mid-1]->word,queryWord,qLen)<0)) && (strncmp(namedList->data[mid]->word,queryWord,qLen)==0))
             return mid;
         else if (strncmp(namedList->data[mid]->word,queryWord,qLen)<0)
-            return findFirst(namedList, (mid + 1), high, queryWord, n, qLen);
+            return findFirst(namedList, (mid + 1), stop, queryWord, n, qLen);
         else
-            return findFirst(namedList, low, (mid - 1), queryWord, n, qLen);
+            return findFirst(namedList, start, (mid - 1), queryWord, n, qLen);
     }
     return -1;
 }
 
-int findLast(List *namedList, int low, int high, char *queryWord, int n, int qLen)
+int findLast(List *namedList, int start, int stop, char *queryWord, int n, int qLen)
 {
-    if (high >= low) {
-        int mid = low + (high - low) / 2;
+    if (stop >= start) {
+        int mid = start + (stop - start) / 2;
         if ((mid == n - 1 || (strncmp(namedList->data[mid+1]->word,queryWord,qLen)>0)) && (strncmp(namedList->data[mid]->word,queryWord,qLen)==0))
             return mid;
         else if (strncmp(namedList->data[mid]->word,queryWord,qLen)>0)
-            return findLast(namedList, low, (mid - 1), queryWord, n, qLen);
+            return findLast(namedList, start, (mid - 1), queryWord, n, qLen);
         else
-            return findLast(namedList, (mid + 1), high, queryWord, n, qLen);
+            return findLast(namedList, (mid + 1), stop, queryWord, n, qLen);
     }
     return -1;
 }
 
 /*----------------------------------------------------------------*/
 /*----------------------------------------------------------------*/
-
 
 int main(int argc, char **argv) {
   char *inputFilePath = argv[1]; //this keeps the path to input file
@@ -232,7 +224,6 @@ int main(int argc, char **argv) {
     {
       insertToTail(origList,word,weight);
     }
-
   }
   /*----------------------------------------------------------------*/
   //close the input file
@@ -260,7 +251,7 @@ int main(int argc, char **argv) {
 
   if (firstPos == -1 || lastPos == -1)
   {
-    fprintf(stderr,"No suggestion!\n");
+    printf("No suggestion!\n");
   }
   else
   {
@@ -283,13 +274,27 @@ int main(int argc, char **argv) {
     }
     InsertionSortWeight(autoList);
     printList(autoList);
+    for(int i=0; i<autoList->capacity;i++)
+    {
+      free(autoList->data[i]->word);
+      free(autoList->data[i]);
+    }
+    free(autoList->data);
     free(autoList);
+    autoList=NULL;
   }
 
   /*----------------------------------------------------------------*/
   /*----------------------------------------------------------------*/
 
+  for(int i=0; i<origList->capacity;i++)
+    {
+      free(origList->data[i]->word);
+      free(origList->data[i]);
+    }
+  free(origList->data);
   free(origList);
+  origList=NULL;
   
   /*----------------------------------------------------------------*/
 
